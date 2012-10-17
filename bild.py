@@ -215,6 +215,23 @@ class Bild:
         self.att['flammenhoeheGauss'] = (nullpunkt - m[0]) / aufloesung
         self.att['flammenhoeheGaussIndex'] = m[0] #_posMax
         self.att['flammenhoeheGaussVarianz'] = s[0] / aufloesung
+        
+    
+    def calc_flammenbreite_single(self, roi):
+        """ Calculate the flame width by fitting two gauss
+        
+        roi (np.array): horizontale roi des bildes
+        """
+        pass
+    
+    def calc_flammenbreite(self):
+        """ Calculate the flame width
+        
+        Creates:
+            2D image
+            
+        """
+        pass
       
         
 class ColorBild(Bild):
