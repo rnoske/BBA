@@ -54,6 +54,15 @@ class bilderdict:
             v.calc_flammenhoeheGauss()
             _msg = 'FlammenhoeheFauss von ' + str(k) + ' wurde berechnet'
             logging.debug(_msg)
+            
+    def calc_flammenoberflaecheGauss(self):
+        """ Calculate flame area with Gauss function for every image in the dict
+        
+        """
+        for k, v in self.bdict.iteritems():
+            v.calc_flammenoberflaecheGauss()
+            _msg = 'FlammenoberflaecheGauss von ' + str(k) + ' wurde berechnet'
+            logging.debug(_msg)
         
     def get_attList(self, attribute):
         """ Get attributes of images in the dict
@@ -71,6 +80,8 @@ class bilderdict:
             self.calc_flammenhoehe()
         elif attribute == 'flammenhoeheGauss':
             self.calc_flammenhoeheGauss()
+        elif attribute == 'flammenoberflaecheGauss':
+            self.calc_flammenoberflaecheGauss()
         
         _tmp = []
         #for every item in dictionary

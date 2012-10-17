@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Plotterui.ui'
 #
-# Created: Thu Oct 11 21:22:46 2012
+# Created: Wed Oct 17 20:49:15 2012
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,6 +17,7 @@ except AttributeError:
 class Ui_Plotterui(object):
     def setupUi(self, Plotterui):
         Plotterui.setObjectName(_fromUtf8("Plotterui"))
+        Plotterui.setEnabled(True)
         Plotterui.resize(803, 586)
         self.MPLArea = MplWidget(Plotterui)
         self.MPLArea.setGeometry(QtCore.QRect(150, 10, 641, 561))
@@ -29,20 +30,30 @@ class Ui_Plotterui(object):
         self.MPLArea.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.MPLArea.setObjectName(_fromUtf8("MPLArea"))
         self.PLOT_Button = QtGui.QPushButton(Plotterui)
-        self.PLOT_Button.setGeometry(QtCore.QRect(20, 190, 75, 23))
+        self.PLOT_Button.setGeometry(QtCore.QRect(20, 250, 75, 23))
         self.PLOT_Button.setObjectName(_fromUtf8("PLOT_Button"))
         self.checkTotalInt = QtGui.QCheckBox(Plotterui)
+        self.checkTotalInt.setEnabled(True)
         self.checkTotalInt.setGeometry(QtCore.QRect(11, 101, 62, 17))
-        self.checkTotalInt.setChecked(True)
+        self.checkTotalInt.setMouseTracking(False)
+        self.checkTotalInt.setChecked(False)
+        self.checkTotalInt.setAutoExclusive(True)
         self.checkTotalInt.setObjectName(_fromUtf8("checkTotalInt"))
         self.checkFlammenhoehe = QtGui.QCheckBox(Plotterui)
         self.checkFlammenhoehe.setGeometry(QtCore.QRect(11, 124, 95, 17))
         self.checkFlammenhoehe.setChecked(True)
+        self.checkFlammenhoehe.setAutoExclusive(True)
         self.checkFlammenhoehe.setObjectName(_fromUtf8("checkFlammenhoehe"))
         self.checkFlammenhoeheGauss = QtGui.QCheckBox(Plotterui)
         self.checkFlammenhoeheGauss.setGeometry(QtCore.QRect(10, 150, 131, 17))
-        self.checkFlammenhoeheGauss.setChecked(True)
+        self.checkFlammenhoeheGauss.setChecked(False)
+        self.checkFlammenhoeheGauss.setAutoExclusive(True)
         self.checkFlammenhoeheGauss.setObjectName(_fromUtf8("checkFlammenhoeheGauss"))
+        self.checkFlammenoberflaecheGauss = QtGui.QCheckBox(Plotterui)
+        self.checkFlammenoberflaecheGauss.setGeometry(QtCore.QRect(10, 180, 131, 17))
+        self.checkFlammenoberflaecheGauss.setChecked(False)
+        self.checkFlammenoberflaecheGauss.setAutoExclusive(True)
+        self.checkFlammenoberflaecheGauss.setObjectName(_fromUtf8("checkFlammenoberflaecheGauss"))
 
         self.retranslateUi(Plotterui)
         QtCore.QObject.connect(self.PLOT_Button, QtCore.SIGNAL(_fromUtf8("clicked()")), Plotterui.myPlot)
@@ -54,6 +65,7 @@ class Ui_Plotterui(object):
         self.checkTotalInt.setText(QtGui.QApplication.translate("Plotterui", "total Int", None, QtGui.QApplication.UnicodeUTF8))
         self.checkFlammenhoehe.setText(QtGui.QApplication.translate("Plotterui", "Flammenhoehe", None, QtGui.QApplication.UnicodeUTF8))
         self.checkFlammenhoeheGauss.setText(QtGui.QApplication.translate("Plotterui", "Flammenhoehe Gauss", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkFlammenoberflaecheGauss.setText(QtGui.QApplication.translate("Plotterui", "Flammenoberflaeche", None, QtGui.QApplication.UnicodeUTF8))
 
 from mplwidget import MplWidget
 

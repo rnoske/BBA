@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Plotterui</class>
  <widget class="QWidget" name="Plotterui">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -39,7 +42,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>190</y>
+     <y>250</y>
      <width>75</width>
      <height>23</height>
     </rect>
@@ -49,6 +52,9 @@
    </property>
   </widget>
   <widget class="QCheckBox" name="checkTotalInt">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>11</x>
@@ -57,10 +63,16 @@
      <height>17</height>
     </rect>
    </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>total Int</string>
    </property>
    <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
     <bool>true</bool>
    </property>
   </widget>
@@ -79,6 +91,9 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="autoExclusive">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QCheckBox" name="checkFlammenhoeheGauss">
    <property name="geometry">
@@ -93,6 +108,28 @@
     <string>Flammenhoehe Gauss</string>
    </property>
    <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkFlammenoberflaecheGauss">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>180</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Flammenoberflaeche</string>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
     <bool>true</bool>
    </property>
   </widget>
@@ -115,7 +152,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>60</x>
-     <y>204</y>
+     <y>264</y>
     </hint>
     <hint type="destinationlabel">
      <x>56</x>

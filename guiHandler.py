@@ -209,6 +209,8 @@ class guiHandler(QtGui.QMainWindow):
             self.plot_flammenhoehe()
         elif self.pui.checkFlammenhoeheGauss.checkState() == 2:
             self.plot_flammenhoeheGauss()
+        elif self.pui.checkFlammenoberflaecheGauss.checkState() == 2:
+            self.plot_flammenoberflaecheGauss()
         else:
             self.test_plotter()
         
@@ -238,6 +240,13 @@ class guiHandler(QtGui.QMainWindow):
         """
         _x, _y, _yerr = self.bba.get_flammenhoeheGauss_list()
         self.update_plot_verrbar(_x,_y, _yerr)
+        
+    def plot_flammenoberflaecheGauss(self):
+        """ Responds to plot flammenhoehe call
+        
+        """
+        _x, _y = self.bba.get_flammenoberflaecheGauss_list()
+        self.updatePlot(_x,_y)
 
 if __name__ == "__main__":
    app = QtGui.QApplication(sys.argv)

@@ -21,6 +21,7 @@ import logging
 #import sys
 import os
 import threading
+import math
 
 #related third party imports
 import numpy as np # NumPy (multidimensional arrays, linear algebra, ...)
@@ -222,7 +223,26 @@ class Bild:
         
         roi (np.array): horizontale roi des bildes
         """
-        pass
+        flammenmitte = int(self.sdict['flammenmitte'])
+        
+        guessleft = np.argmax(roi[:flammenmitte])
+        guessright = np.argmax(roi[flammenmitte:]) + flammenmitte
+        
+        # fitting process
+        y = roi
+        _max = len(y)-1
+        x = np.linspace(0,_max, len(y))
+        n = 2 #2 gauss
+        b = 10
+        a = [50, 50]
+        m = [guessleft, guessright] #da nur ein gaus nur ein eintrag
+        s = [10, 10]
+        
+        b, a, m, s = self.fitter.multi_gauss_fit(x, y, n, b, a, m, s, plotflag = False)
+        #print b, a, m, s
+        print m, a
+        return b, a, m, s
+        
     
     def calc_flammenbreite(self):
         """ Calculate the flame width
@@ -231,8 +251,55 @@ class Bild:
             2D image
             
         """
-        pass
+        _arr = self.create_array()
+        nullpunkt = int(self.sdict['nullpunkt'])
+        
+        if 'flammenhoeheIndex' in self.att.keys():
+            flammenhoehe = self.att['flammenhoeheIndex']
+        else:
+            self.calc_flammenhoehe()
+            flammenhoehe = self.att['flammenhoeheIndex']
+        
+        #nehme nur blauen farbkanal
+        if _arr.shape[2] > 1:
+            _arr = _arr[:,:,2]
+            
+        #schneide array zurecht:
+        _arr = _arr[flammenhoehe:nullpunkt, :]
+        
+        #definiere testroi
+        #print _arr.shape
+        #troi = _arr[76, :]
+        #b, a, m, s = self.calc_flammenbreite_single(troi)
+        
+        _tarea = [[0., 0.]]*_arr.shape[0]
+        #print _arr.shape
+        for i in xrange(_arr.shape[0]):
+            #print i
+            troi = _arr[i, :]
+            b, a, m, s = self.calc_flammenbreite_single(troi)
+            _tarea[i] = m
+        
+        return _tarea
       
+    def calc_flammenoberflaecheGauss(self):
+        """ Calculate the flame area
+        
+        """
+        aufloesung = float(self.sdict['aufloesung'])
+        
+        _tarea = self.calc_flammenbreite()
+        _tarea = np.array(_tarea)
+        _left = _tarea[:,0]
+        _right = _tarea[:,1]
+        area = 0.0
+        for i in xrange(len(_left)-1):
+            area += math.sqrt((_left[i]-_left[i+1])**2 + 1)
+            area += math.sqrt((_right[i]-_right[i+1])**2 + 1)
+        area += _right[len(_right)-1] - _left[len(_left)-1]
+        print area / aufloesung
+        self.att['flammenoberflaecheGauss'] = area / aufloesung
+        
         
 class ColorBild(Bild):
     """

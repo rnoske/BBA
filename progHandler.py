@@ -91,6 +91,19 @@ class BBA:
             _tmpE.append(entry[1])
         return _tmpX, _tmpY, _tmpE
         
+    def get_flammenoberflaecheGauss_list(self):
+        """ Return an array with number and flammenhoehe
+        
+        """
+        _att = 'flammenoberflaecheGauss'
+        _list = self.bd.get_attList(_att)
+        _tmpX = []
+        _tmpY = []
+        for entry in _list:
+            _tmpX.append(entry[0])
+            _tmpY.append(entry[1])
+        return _tmpX, _tmpY
+        
     #Settingsui handling
     def get_settings(self, section = 'FlameParameters'):
         """ Return an dictionaray of current Settings
