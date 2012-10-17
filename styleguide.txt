@@ -1,0 +1,21 @@
+Package and Module Names:
+Modules should have short, all-lowercase names. Underscores can be used in the 
+module name if it improves readability. Python packages should also have short, 
+all-lowercase names, although the use of underscores is discouraged.
+
+Class Names:
+Almost without exception, class names use the CapWords convention. 
+Classes for internal use have a leading underscore in addition.
+eg: CapitalizedWords():
+
+Function Names:
+Function names should be lowercase, with words separated by underscores as 
+necessary to improve readability.
+mixedCase is allowed only in contexts where that's already the prevailing style
+ (e.g. threading.py), to retain backwards compatibility.
+eg: my_func_blub():
+
+Constants:
+Constants are usually defined on a module level and written in all capital 
+letters with underscores separating words. Examples include MAX_OVERFLOW and 
+TOTAL.
