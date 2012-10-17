@@ -297,7 +297,7 @@ class Bild:
             area += math.sqrt((_left[i]-_left[i+1])**2 + 1)
             area += math.sqrt((_right[i]-_right[i+1])**2 + 1)
         area += _right[len(_right)-1] - _left[len(_left)-1]
-        print area / aufloesung
+        #print area / aufloesung
         self.att['flammenoberflaecheGauss'] = area / aufloesung
         
         
