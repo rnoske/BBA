@@ -195,6 +195,12 @@ class guiHandler(QtGui.QMainWindow):
         """
         self.pui.MPLArea.qmc.updatePlot(x,y)
         
+    def update_plot_verrbar(self, x, y, verrbar):
+        """ update plot with vertical errorbars
+        
+        """
+        self.pui.MPLArea.qmc.update_plot_verrbar(x, y, verrbar)
+        
     def myPlot(self):
         # checked = 2 unchecked = 0
         if self.pui.checkTotalInt.checkState() == 2:
@@ -230,8 +236,8 @@ class guiHandler(QtGui.QMainWindow):
         """ Responds to plot flammenhoehe call
         
         """
-        _x, _y = self.bba.get_flammenhoeheGauss_list()
-        self.updatePlot(_x,_y)
+        _x, _y, _yerr = self.bba.get_flammenhoeheGauss_list()
+        self.update_plot_verrbar(_x,_y, _yerr)
 
 if __name__ == "__main__":
    app = QtGui.QApplication(sys.argv)

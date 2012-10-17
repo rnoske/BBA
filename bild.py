@@ -170,41 +170,6 @@ class Bild:
         #print _posMax
         self.att['flammenhoehe'] = (nullpunkt - _posMax) / aufloesung
         self.att['flammenhoeheIndex'] = _posMax
-        
-    def fit_Gauss(self, y, centerguess = 100, fitEnabled = False):
-        """ Fit 1D Gauss function to Data
-        
-        y (npArray): Numpy array with equally spaced y data
-        fitEnabled (bool): optional to plot data with pylab
-        
-        Returns:
-            fitapramter (array)
-            
-        """
-        B = 53 #B noise
-        A = 150 #A Amplitude
-        mu = centerguess # mu center
-        sigma = 20 #sigma width
-        coeffs = [B, A, mu, sigma]
-        
-        _max = len(y)-1
-        x = np.linspace(0,_max, len(y))
-        y = np.array(y)
-        
-        from scipy.optimize import curve_fit
-
-        gauss = lambda x , b, a, mu, sigma: b+a*np.exp(-((x-mu)/sigma)**2)
-        p, cov = curve_fit(gauss, x, y, p0=np.array(coeffs))
-        
-        #if fitting is neccessary
-        if fitEnabled == True:
-            myfit = lambda x: p[0]+p[1]*np.exp(-((x-p[2])/p[3])**2)
-            import pylab as pl
-            #pl.plot(x,y,'b.', x, myfit(x), 'r-')
-            pl.plot(x,y)
-            pl.plot(x,myfit(x))
-            pl.show()
-        return p
 
         
     def calc_flammenhoeheGauss(self):
@@ -232,28 +197,25 @@ class Bild:
             logging.error('Flammenmitte nicht innerhalb des Bildes')
         #Calculations
         _roi = _arr[:,flammenmitte]
-        _guessMax = np.argmax(_roi)
-        #alt:
-        _posMax = self.fit_Gauss(_roi, centerguess = _guessMax)
-        #print _posMax
-        _posMax = _posMax[2]
-        #print _posMax
-
-        #neu:
-        """
+        _guessMax = np.argmax(_roi)        
+        # fitting process
         y = _roi
         _max = len(y)-1
         x = np.linspace(0,_max, len(y))
         n = 1 #1 gauss
+        b = 1
+        a = [50]
         m = [_guessMax] #da nur ein gaus nur ein eintrag
         s = [10]
         
-        param = self.fitter.multiGaussFit(x, y, n, m, s, plotflag = False)
-        print param
-        print type(param)
-        """
-        self.att['flammenhoeheGauss'] = (nullpunkt - _posMax) / aufloesung
-        self.att['flammenhoeheGaussIndex'] = _posMax
+        b, a, m, s = self.fitter.multi_gauss_fit(x, y, n, b, a, m, s, plotflag = False)
+        #print b, a, m, s
+        
+        #defining flame attributes
+        self.att['flammenhoeheGauss'] = (nullpunkt - m[0]) / aufloesung
+        self.att['flammenhoeheGaussIndex'] = m[0] #_posMax
+        self.att['flammenhoeheGaussVarianz'] = s[0] / aufloesung
+      
         
 class ColorBild(Bild):
     """

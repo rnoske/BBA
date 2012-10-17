@@ -83,7 +83,13 @@ class BBA:
         for entry in _list:
             _tmpX.append(entry[0])
             _tmpY.append(entry[1])
-        return _tmpX, _tmpY
+            
+        _att = 'flammenhoeheGaussVarianz'
+        _list = self.bd.get_attList(_att)
+        _tmpE = []
+        for entry in _list:
+            _tmpE.append(entry[1])
+        return _tmpX, _tmpY, _tmpE
         
     #Settingsui handling
     def get_settings(self, section = 'FlameParameters'):

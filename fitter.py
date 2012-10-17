@@ -63,13 +63,13 @@ class Fitter():
         plt.legend()
         plt.show()
         
-    def gauss(self, x, mean, sd):
+    def gauss_norm(self, x, mean, sd):
         norm = []
         for i in range(x.size):
             norm += [1.0/(sd*np.sqrt(2*np.pi))*np.exp(-(x[i] - mean)**2/(2*sd**2))]
         return np.array(norm)
         
-    def multiGaussFit(self, x, y, n, m, s, plotflag = False):
+    def multi_gauss_fit_norm(self, x, y, n, m, s, plotflag = False):
         """ Fit n Gauss functions do data
         
         x (np.array): numpy array with x-axis
@@ -89,9 +89,9 @@ class Fitter():
             
         """    
         # Initial fit
-        y_init = self.gauss(x, m[0], s[0])
+        y_init = self.gauss_norm(x, m[0], s[0])
         for i in xrange(1, n):
-            y_init += self.gauss(x, m[i]+m[i-1], s[i])
+            y_init += self.gauss_norm(x, m[i]+m[i-1], s[i])
                 
         def res(p, y, x):
             #initialisation of paramters
@@ -107,9 +107,9 @@ class Fitter():
                 elif i >= 1:
                     absm.append(m[i] + m[i-1])
             #generation fit function
-            y_fit = self.gauss(x, absm[0], s[0])
+            y_fit = self.gauss_norm(x, absm[0], s[0])
             for i in xrange(1,n):
-                y_fit += self.gauss(x, absm[i], s[i]) 
+                y_fit += self.gauss_norm(x, absm[i], s[i]) 
             err = y - y_fit
             return err
         #parameter magic, notwendig um paramter für leastsq zu bekommen
@@ -127,9 +127,9 @@ class Fitter():
         #plotting
         if plotflag == True:
             #result function
-            y_est = self.gauss(x, param[0], param[n])
+            y_est = self.gauss_norm(x, param[0], param[n])
             for i in xrange(1, n):
-                y_est += self.gauss(x, param[i+0], param[i+2])
+                y_est += self.gauss_norm(x, param[i+0], param[i+2])
             
             plt.plot(x, y, label='Real Data')
             plt.plot(x, y_init, 'r.', label='Starting Guess')
@@ -138,13 +138,102 @@ class Fitter():
             plt.show()
         
         return param
+        
+        
+    def gauss(self, x, b, a, mean, sd):
+        gauss = []
+        for i in range(x.size):
+            gauss.append(b+a*np.exp(-((x[i]-mean)/sd)**2))
+        return np.array(gauss)
       
+    def multi_gauss_fit(self, x, y, n, b, a, m, s, plotflag = True):
+        """ Fit n Gauss functions do data
+        
+        x (np.array): numpy array with x-axis
+        y (np.array): numpy array with data
+        n (int): number of Gauss functions to fit
+        b (int): offset of gauss functions
+        a (np.array): preexponential factors
+        m (np.array): m[0]= initial mean value for first gauss
+                    m[n]= initial guess for mean value, diffrent from norm 
+                    gauss fit
+        s (np.array): array of standard deviations
+        plotflag (bool): if true an graph is plottet
+        
+        Example:
+            n = 2
+            m = [5., 5.]
+            s = [1, 1]
+            x, y_real = myfitter.create_testdata()
+            multiGaussFit(x, y_real, n, m, s)
+            
+        Returns:
+            b, a, m, s
+            
+        """           
+        def res(p, y, x):
+            #initialisation of paramters
+            b = p[0]
+            a = []
+            m = []
+            s = []
+            for i in xrange(n):
+                a.append(p[i+1]) #+1 because 0 is offset b
+                m.append(p[i+1+n]) #3 because 3 params
+                s.append(p[i+1+(2*n)])
+                #print a, m, s
+              
+            #generation fit function
+            y_fit = self.gauss(x, b, a[0], m[0], s[0])
+            for i in xrange(1,n):
+                y_fit += self.gauss(x, b, a[i], m[i], s[i])
+            err = y - y_fit
+            return err
+        #parameter magic, notwendig um paramter für leastsq zu bekommen
+        p = []
+        p.append(b)
+        for item in a:
+            p.append(item)
+        for item in m:
+            p.append(item)
+        for item in s:
+            p.append(item)
+        p = np.array(p)
+        param, success = leastsq(res, p, args = (y, x))
+        #print param
+        
+        #result function
+        b = param[0]
+        a = []
+        m = []
+        s = []
+        for i in xrange(n):
+            a.append(param[i+1]) #+1 because 0 is offset b
+            m.append(param[i+1+n]) #3 because 3 params
+            s.append(param[i+1+(2*n)])
+            #print a, m, s     
+        
+        #plotting
+        if plotflag == True:
+            #generation fit function
+            y_est = self.gauss(x, b, a[0], m[0], s[0])
+            for i in xrange(1,n):
+                y_est += self.gauss(x, b, a[i], m[i], s[i])
+            
+            plt.plot(x, y, label='Real Data')
+            plt.plot(x, y_est, 'g.', label='Fitted')
+            plt.legend()
+            plt.show()
+        
+        return b, a, m, s
       
 if __name__ == "__main__":
     myfitter = Fitter()
     #myfitter.beispiel()
     n = 2
-    m = [5., 5.]
-    s = [1, 1]
+    b = 0.
+    a = [1., 1.]
+    m = [-5., 0.]
+    s = [1., 1.]
     x, y_real = myfitter.create_testdata()
-    myfitter.multiGaussFit(x, y_real, n, m, s)
+    param = myfitter.multi_gauss_fit(x, y_real, n, b, a, m, s)

@@ -56,6 +56,22 @@ class Qt4MplCanvas(FigureCanvas):
         mpl.axes.Axes.relim(self.axes)
         self.fig.canvas.draw()
         
+    def update_plot_verrbar(self, x, y, errbar):
+        """ Update plot with errorbars
+        
+        x (arr): x values
+        y (arr): y values
+        errbar (arr): errors of y values
+        
+        """
+        self.axes.clear()
+        #self.x = x
+        #self.y = y
+        #self.fig.canvas.draw()
+        self.axes.errorbar(x, y, yerr = errbar)
+        mpl.axes.Axes.relim(self.axes)
+        self.fig.canvas.draw()
+        
 class MplWidget(QtGui.QWidget):
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
