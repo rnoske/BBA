@@ -4,6 +4,7 @@
 import numpy as np
 from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
+from multiprocessing import Pool, Process
 
 class Fitter():
     """ Class for fitting data
@@ -62,6 +63,8 @@ class Fitter():
         plt.plot(x, y_est, 'g.', label='Fitted')
         plt.legend()
         plt.show()
+        
+        return plsq
         
     def gauss_norm(self, x, mean, sd):
         norm = []
@@ -227,9 +230,25 @@ class Fitter():
         
         return b, a, m, s
       
+    def multi_beispiel(self):
+        jobs = []
+        n = 2
+        for i in xrange(n):
+            p = Process(target=self.beispiel)
+            jobs.append(p)
+            p.start()
+        
+        p.join()
+        
+        for j in jobs:
+            print '%s.exitcode = %s' % (j.name, j.exitcode)
+        
+        
+        
 if __name__ == "__main__":
     myfitter = Fitter()
-    #myfitter.beispiel()
+    myfitter.multi_beispiel()
+    """
     n = 2
     b = 0.
     a = [1., 1.]
@@ -237,3 +256,4 @@ if __name__ == "__main__":
     s = [1., 1.]
     x, y_real = myfitter.create_testdata()
     param = myfitter.multi_gauss_fit(x, y_real, n, b, a, m, s)
+    """

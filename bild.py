@@ -22,6 +22,7 @@ import logging
 import os
 import threading
 import math
+from multiprocessing import Process, Queue
 
 #related third party imports
 import numpy as np # NumPy (multidimensional arrays, linear algebra, ...)
@@ -218,7 +219,7 @@ class Bild:
         self.att['flammenhoeheGaussVarianz'] = s[0] / aufloesung
         
     
-    def calc_flammenbreite_single(self, roi):
+    def calc_flammenbreite_single(self, roi, q, i):
         """ Calculate the flame width by fitting two gauss
         
         roi (np.array): horizontale roi des bildes
@@ -240,7 +241,8 @@ class Bild:
         
         b, a, m, s = self.fitter.multi_gauss_fit(x, y, n, b, a, m, s, plotflag = False)
         #print b, a, m, s
-        print m, a
+        #print m, a
+        q.put([i, b, a, m, s])
         return b, a, m, s
         
     
@@ -272,14 +274,36 @@ class Bild:
         #troi = _arr[76, :]
         #b, a, m, s = self.calc_flammenbreite_single(troi)
         
-        _tarea = [[0., 0.]]*_arr.shape[0]
+        #_tarea = [[0., 0.]]*_arr.shape[0]
         #print _arr.shape
+        q = Queue()
+        for i in xrange(_arr.shape[0]):
+            troi = _arr[i, :]
+            p = Process(target=self.calc_flammenbreite_single, args=(troi, q, i))
+            p.start()
+            
+        _tarr =[]
+        for i in xrange(_arr.shape[0]):
+            _tmp = q.get()
+            _tarr.append(_tmp)
+            
+        p.join()
+        
+        _tarr.sort()
+        
+        _tarea = []
+        for item in _tarr:
+            #print item[3]
+            _tarea.append(item[3])
+        
+        
+        """
         for i in xrange(_arr.shape[0]):
             #print i
             troi = _arr[i, :]
             b, a, m, s = self.calc_flammenbreite_single(troi)
             _tarea[i] = m
-        
+        """
         return _tarea
       
     def calc_flammenoberflaecheGauss(self):
