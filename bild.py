@@ -22,7 +22,8 @@ import logging
 import os
 import threading
 import math
-from multiprocessing import Process, Queue
+
+import multiprocessing as mp
 
 #related third party imports
 import numpy as np # NumPy (multidimensional arrays, linear algebra, ...)
@@ -219,31 +220,34 @@ class Bild:
         self.att['flammenhoeheGaussVarianz'] = s[0] / aufloesung
         
     
-    def calc_flammenbreite_single(self, roi, q, i):
+    def calc_flammenbreite_single(self, work_q, result_q):
         """ Calculate the flame width by fitting two gauss
         
         roi (np.array): horizontale roi des bildes
         """
-        flammenmitte = int(self.sdict['flammenmitte'])
-        
-        guessleft = np.argmax(roi[:flammenmitte])
-        guessright = np.argmax(roi[flammenmitte:]) + flammenmitte
-        
-        # fitting process
-        y = roi
-        _max = len(y)-1
-        x = np.linspace(0,_max, len(y))
-        n = 2 #2 gauss
-        b = 10
-        a = [50, 50]
-        m = [guessleft, guessright] #da nur ein gaus nur ein eintrag
-        s = [10, 10]
-        
-        b, a, m, s = self.fitter.multi_gauss_fit(x, y, n, b, a, m, s, plotflag = False)
-        #print b, a, m, s
-        #print m, a
-        q.put([i, b, a, m, s])
-        return b, a, m, s
+        while True:
+            flammenmitte = int(self.sdict['flammenmitte'])
+            
+            index, roi = work_q.get()
+            guessleft = np.argmax(roi[:flammenmitte])
+            guessright = np.argmax(roi[flammenmitte:]) + flammenmitte
+            
+            # fitting process
+            y = roi
+            _max = len(y)-1
+            x = np.linspace(0,_max, len(y))
+            n = 2 #2 gauss
+            b = 10
+            a = [50, 50]
+            m = [guessleft, guessright] #da nur ein gaus nur ein eintrag
+            s = [10, 10]
+            
+            b, a, m, s = self.fitter.multi_gauss_fit(x, y, n, b, a, m, s, plotflag = False)
+            #print b, a, m, s
+            #print m, a
+            result_q.put([index, b, a, m, s])
+            work_q.task_done()
+            #return b, a, m, s
         
     
     def calc_flammenbreite(self):
@@ -269,41 +273,58 @@ class Bild:
         #schneide array zurecht:
         _arr = _arr[flammenhoehe:nullpunkt, :]
         
-        #definiere testroi
-        #print _arr.shape
-        #troi = _arr[76, :]
-        #b, a, m, s = self.calc_flammenbreite_single(troi)
+        #multiprocessing setup
+        num_workers = mp.cpu_count() #number of worker processes
+        work_q = mp.JoinableQueue() #work queue
+        result_q = mp.Queue() #Queue for results
         
-        #_tarea = [[0., 0.]]*_arr.shape[0]
-        #print _arr.shape
-        q = Queue()
+        #put tasks into work_q
         for i in xrange(_arr.shape[0]):
-            troi = _arr[i, :]
-            p = Process(target=self.calc_flammenbreite_single, args=(troi, q, i))
-            p.start()
+            _troi = _arr[i, :]
+            _work = (i, _troi)
+            work_q.put(_work)
             
-        _tarr =[]
-        for i in xrange(_arr.shape[0]):
-            _tmp = q.get()
-            _tarr.append(_tmp)
             
-        p.join()
+        #setup workers
+        workers = []
+        for i in xrange(num_workers):
+            workers.append(mp.Process(target=self.calc_flammenbreite_single, 
+                                   args=(work_q, result_q)))
         
+        #start workers                   
+        for w in workers:
+            #print w
+            w.daemon = True
+            w.start()
+        work_q.join()
+        
+        
+        #get results out of results_q
+        _tarr = []
+        n_result = result_q.qsize()
+        for result in xrange(n_result):
+            _t = result_q.get()
+            _tarr.append(_t)
+            
+            
+        #close queues
+        work_q.close()
+        result_q.close()
+        result_q.join_thread()
+        
+        #terminate workers
+        for w in workers:
+            w.terminate()
+            
         _tarr.sort()
         
         _tarea = []
         for item in _tarr:
             #print item[3]
             _tarea.append(item[3])
+            
+        print 'Finished calculating flame area for image' + str(self.att['name'])
         
-        
-        """
-        for i in xrange(_arr.shape[0]):
-            #print i
-            troi = _arr[i, :]
-            b, a, m, s = self.calc_flammenbreite_single(troi)
-            _tarea[i] = m
-        """
         return _tarea
       
     def calc_flammenoberflaecheGauss(self):

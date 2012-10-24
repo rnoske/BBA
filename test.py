@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, JoinableQueue
+import multiprocessing as mp
+
 
 class Fitter():
     """ Class for fitting data
@@ -29,50 +31,82 @@ class Fitter():
         y_real = norm(x, mean1, std1) + norm(x, mean2, std2)
         return x, y_real
         
-    def beispiel(self, i, q):
+    def beispiel(self, work_q, result_q):
         """ Testbeispiel. Muss mit creat_testdata zusammen funktionieren!
         
         """
-        def norm(x, mean, sd):
-            norm = []
-            for i in range(x.size):
-                norm += [1.0/(sd*np.sqrt(2*np.pi))*np.exp(-(x[i] - mean)**2/(2*sd**2))]
-            return np.array(norm)
-        x, y_real = self.create_testdata()
-        # Solving
-        m, dm, sd1, sd2 = [5, 10, 1, 1]
-        p = [m, dm, sd1, sd2] # Initial guesses for leastsq
-        y_init = norm(x, m, sd1) + norm(x, m + dm, sd2) # For final comparison plot
-        
-        def res(p, y, x):
-            m, dm, sd1, sd2 = p
-            m1 = m
-            m2 = m1 + dm
-            y_fit = norm(x, m1, sd1) + norm(x, m2, sd2)
-            err = y - y_fit
-            return err
-        
-        plsq = leastsq(res, p, args = (y_real, x))        
-        y_est = norm(x, plsq[0][0], plsq[0][2]) + norm(x, plsq[0][1], plsq[0][3])
-        """
-        plt.plot(x, y_real, label='Real Data')
-        plt.plot(x, y_init, 'r.', label='Starting Guess')
-        plt.plot(x, y_est, 'g.', label='Fitted')
-        plt.legend()
-        plt.show()
-        """
-        
-        q.put([i, plsq])
+        while True:
+            work = work_q.get()
+            print 'test'
+
+            def norm(x, mean, sd):
+                norm = []
+                for i in range(x.size):
+                    norm += [1.0/(sd*np.sqrt(2*np.pi))*np.exp(-(x[i] - mean)**2/(2*sd**2))]
+                return np.array(norm)
+            i, x, y_real = work #self.create_testdata()
+            # Solving
+            m, dm, sd1, sd2 = [5, 10, 1, 1]
+            p = [m, dm, sd1, sd2] # Initial guesses for leastsq
+            y_init = norm(x, m, sd1) + norm(x, m + dm, sd2) # For final comparison plot
+            
+            def res(p, y, x):
+                m, dm, sd1, sd2 = p
+                m1 = m
+                m2 = m1 + dm
+                y_fit = norm(x, m1, sd1) + norm(x, m2, sd2)
+                err = y - y_fit
+                return err
+            
+            plsq = leastsq(res, p, args = (y_real, x))       
+            print plsq
+            y_est = norm(x, plsq[0][0], plsq[0][2]) + norm(x, plsq[0][1], plsq[0][3])
+            """
+            plt.plot(x, y_real, label='Real Data')
+            plt.plot(x, y_init, 'r.', label='Starting Guess')
+            plt.plot(x, y_est, 'g.', label='Fitted')
+            plt.legend()
+            plt.show()
+            """
+            
+            result_q.put([i, plsq])
+            work_q.task_done()
         
         
     def multi_beispiel(self):
-        jobs = []
+        num_workers = 2
+        work_q = JoinableQueue()
         n = 10
-        q = Queue()
+        result_q = mp.Queue()    
+
+        #put tasks into queue
+        for i in xrange(n):
+            x, y = self.create_testdata()
+            _work = (i, x, y)
+            work_q.put(_work)
+
+        
+        #start end setup workers
+        workers = []
+        for i in range(num_workers):
+            workers.append(Process(target=self.beispiel, args=(work_q, result_q)))
+            
+        for w in workers:
+            print w
+            w.daemon = True
+            w.start()
+        work_q.join()
+        
+        n_result = result_q.qsize()
+        for result in xrange(n_result):
+            _t = result_q.get()
+            print _t
+
+        """            
         for i in xrange(n):
             p = Process(target=self.beispiel, args=(i, q,))
-            jobs.append(p)
             p.start()
+        
         
         
         _tarr =[]
@@ -85,7 +119,7 @@ class Fitter():
         print _tarr
         _tarr.sort()
         print _tarr
-        
+        """
         
         
         print 'finished'
