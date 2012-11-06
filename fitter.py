@@ -144,10 +144,13 @@ class Fitter():
         
         
     def gauss(self, x, b, a, mean, sd):
+        """
         gauss = []
         for i in range(x.size):
             gauss.append(b+a*np.exp(-((x[i]-mean)/sd)**2))
         return np.array(gauss)
+        """
+        return b+a*np.exp(-((x-mean)/sd)**2)
       
     def multi_gauss_fit(self, x, y, n, b, a, m, s, plotflag = True):
         """ Fit n Gauss functions do data
@@ -247,8 +250,8 @@ class Fitter():
         
 if __name__ == "__main__":
     myfitter = Fitter()
-    myfitter.multi_beispiel()
-    """
+    #myfitter.multi_beispiel()
+    
     n = 2
     b = 0.
     a = [1., 1.]
@@ -256,4 +259,4 @@ if __name__ == "__main__":
     s = [1., 1.]
     x, y_real = myfitter.create_testdata()
     param = myfitter.multi_gauss_fit(x, y_real, n, b, a, m, s)
-    """
+    
